@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D PLY Viewer</title>
+    <title>PLY Viewer</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three/examples/js/controls/OrbitControls.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three/examples/js/loaders/PLYLoader.js"></script>
     <style>
-        body { text-align: center; }
-        .container { width: 400px; height: 400px; margin: 20px auto; }
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .ply-container { width: 300px; height: 300px; display: inline-block; margin: 10px; border: 1px solid #ccc; }
     </style>
 </head>
 <body>
     <h1>3D PLY Viewer</h1>
-    <div id="marigold" class="container"></div>
+    <div class="ply-container" id="marigold"></div>
     <p>Marigold</p>
-    <div id="geowizard" class="container"></div>
+    <div class="ply-container" id="geowizard"></div>
     <p>Geowizard</p>
-    <div id="ours" class="container"></div>
+    <div class="ply-container" id="ours"></div>
     <p>Ours</p>
 
     <script>
@@ -35,37 +35,22 @@
             renderer.setSize(width, height);
             container.appendChild(renderer.domElement);
 
+            // 🚀 `OrbitControls` 수정 (기존 `THREE.OrbitControls` → `new THREE.OrbitControls`)
             const controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
 
-            // ✅ 조명 추가 (PLY 모델이 어두운 경우 해결)
-            const light = new THREE.DirectionalLight(0xffffff, 1.5);
-            light.position.set(1, 1, 1).normalize();
+            const light = new THREE.AmbientLight(0xffffff, 1);
             scene.add(light);
-            scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
             const loader = new THREE.PLYLoader();
-
-            // ✅ GitHub LFS 직접 URL 사용 불가능 → 반드시 로컬 서버 필요!
-            // const filePath = `https://github.com/ByungKi-K/ply-viewer/raw/main/${fileName}`; // ❌ 사용 불가
-
-            // ✅ 해결 방법: 로컬에서 서버 실행 후 파일 경로 설정
-            const filePath = `./${fileName}`;
+            const filePath = `https://github.com/ByungKi-K/ply-viewer/raw/main/${fileName}`;
 
             loader.load(filePath, function (geometry) {
                 console.log(`${fileName} Loaded Successfully`, geometry);
                 geometry.computeVertexNormals();
-
-                const material = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, flatShading: true });
-                const mesh = new THREE.Mesh(geometry, material);
-                mesh.scale.set(1, 1, 1); // 필요에 따라 조절 가능
-                scene.add(mesh);
-            }, 
-            function (xhr) {
-                console.log(`${fileName} Loading: ${(xhr.loaded / xhr.total * 100).toFixed(2)}%`);
-            }, 
-            function (error) {
-                console.error(`Error loading ${fileName}:`, error);
+                const material = new THREE.PointsMaterial({ size: 0.01, color: 0xffffff, vertexColors: true });
+                const pointCloud = new THREE.Points(geometry, material);
+                scene.add(pointCloud);
             });
 
             function animate() {
@@ -76,7 +61,6 @@
             animate();
         }
 
-        // ✅ 파일 불러오기 (서버에서 로컬 파일 제공 필요)
         loadPLYModel("marigold", "marigold.ply");
         loadPLYModel("geowizard", "geowizard.ply");
         loadPLYModel("ours", "ours.ply");
