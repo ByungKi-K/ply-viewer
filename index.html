@@ -1,71 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PLY Viewer</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script type="module">
-        import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/controls/OrbitControls.js";
-        import { PLYLoader } from "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/loaders/PLYLoader.js";
-
-        function loadPLYModel(containerId, fileName) {
-            const container = document.getElementById(containerId);
-            const width = container.clientWidth;
-            const height = container.clientHeight;
-
-            const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 100);
-            camera.position.set(0, 0, 2);
-
-            const renderer = new THREE.WebGLRenderer();
-            renderer.setSize(width, height);
-            container.appendChild(renderer.domElement);
-
-            // ✅ OrbitControls 올바르게 생성
-            const controls = new OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-
-            const light = new THREE.AmbientLight(0xffffff, 1);
-            scene.add(light);
-
-            const loader = new PLYLoader();
-            const filePath = `https://github.com/ByungKi-K/ply-viewer/raw/main/${fileName}`;
-
-            loader.load(filePath, function (geometry) {
-                console.log(`${fileName} Loaded Successfully`, geometry);
-                geometry.computeVertexNormals();
-                const material = new THREE.PointsMaterial({ size: 0.01, color: 0xffffff, vertexColors: true });
-                const pointCloud = new THREE.Points(geometry, material);
-                scene.add(pointCloud);
-            });
-
-            function animate() {
-                requestAnimationFrame(animate);
-                controls.update();
-                renderer.render(scene, camera);
-            }
-            animate();
-        }
-
-        window.onload = function () {
-            loadPLYModel("marigold", "marigold.ply");
-            loadPLYModel("geowizard", "geowizard.ply");
-            loadPLYModel("ours", "ours.ply");
-        };
-    </script>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
-        .ply-container { width: 300px; height: 300px; display: inline-block; margin: 10px; border: 1px solid #ccc; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>PLY Viewer (ESM)</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; }
+    .ply-container { width: 300px; height: 300px; display: inline-block; margin: 10px; border: 1px solid #ccc; }
+  </style>
 </head>
 <body>
-    <h1>3D PLY Viewer</h1>
-    <div class="ply-container" id="marigold"></div>
-    <p>Marigold</p>
-    <div class="ply-container" id="geowizard"></div>
-    <p>Geowizard</p>
-    <div class="ply-container" id="ours"></div>
-    <p>Ours</p>
+  <h1>3D PLY Viewer</h1>
+  <div class="ply-container" id="marigold"></div>
+  <p>Marigold</p>
+  <div class="ply-container" id="geowizard"></div>
+  <p>Geowizard</p>
+  <div class="ply-container" id="ours"></div>
+  <p>Ours</p>
+
+  <!-- ESM 스크립트 -->
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js";
+    import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/controls/OrbitControls.js";
+    import { PLYLoader } from "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/loaders/PLYLoader.js";
+
+    function loadPLYModel(containerId, fileName) {
+      const container = document.getElementById(containerId);
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 100);
+      camera.position.set(0, 0, 2);
+
+      const renderer = new THREE.WebGLRenderer();
+      renderer.setSize(width, height);
+      container.appendChild(renderer.domElement);
+
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+
+      const light = new THREE.AmbientLight(0xffffff, 1);
+      scene.add(light);
+
+      const loader = new PLYLoader();
+      const filePath = `https://github.com/ByungKi-K/ply-viewer/raw/main/${fileName}`;
+
+      loader.load(filePath, function (geometry) {
+        console.log(`${fileName} Loaded Successfully`, geometry);
+        geometry.computeVertexNormals();
+        const material = new THREE.PointsMaterial({ size: 0.01, color: 0xffffff, vertexColors: true });
+        const pointCloud = new THREE.Points(geometry, material);
+        scene.add(pointCloud);
+      });
+
+      function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+      }
+      animate();
+    }
+
+    // 페이지 로드 시 실행
+    window.onload = function() {
+      loadPLYModel("marigold", "marigold.ply");
+      loadPLYModel("geowizard", "geowizard.ply");
+      loadPLYModel("ours", "ours.ply");
+    };
+  </script>
 </body>
 </html>
