@@ -2,110 +2,119 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Three.js + PLYLoader + OrbitControls</title>
+  <title>Three.js PLY Viewer (OrbitControls)</title>
   <style>
-    /* 화면 전체를 캔버스로 사용 */
+    /* 브라우저 기본 여백 제거 및 전체 화면 */
     body { margin: 0; overflow: hidden; }
     canvas { display: block; }
   </style>
 </head>
 <body>
-  <script type="module">
-    /*
-      1) Three.js (ES Module 버전) - CDN
-      2) OrbitControls (ES Module 버전) - CDN
-      3) PLYLoader (ES Module 버전) - CDN
-    */
-    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.module.js";
-    import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/controls/OrbitControls.js";
-    import { PLYLoader } from "https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/loaders/PLYLoader.js";
 
-    let scene, camera, renderer, controls;
+<script type="module">
+/*
+  1) Three.js (ES Module 버전)
+  2) OrbitControls (ES Module 버전)
+  3) PLYLoader (ES Module 버전)
 
-    init();
-    animate();
+  - 모두 CDN에서 가져옴
+  - 세 모듈을 import로 불러와서 브라우저가 인식하게 함
+*/
 
-    function init() {
-      // 씬(Scene)
-      scene = new THREE.Scene();
-      scene.background = new THREE.Color(0xf0f0f0);
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.module.js";
+import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/controls/OrbitControls.js";
+import { PLYLoader } from "https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/loaders/PLYLoader.js";
 
-      // 카메라(Camera)
-      camera = new THREE.PerspectiveCamera(
-        75,                                // 시야각(FOV)
-        window.innerWidth / window.innerHeight,  // 종횡비
-        0.1,  // near
-        1000  // far
-      );
-      camera.position.set(0, 0, 2);
+/* 전역 변수 선언 */
+let scene, camera, renderer, controls;
 
-      // 렌더러(Renderer)
-      renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      document.body.appendChild(renderer.domElement);
+init();
+animate();
 
-      // 컨트롤(OrbitControls)
-      controls = new OrbitControls(camera, renderer.domElement);
-      controls.enableDamping = true;
-      controls.dampingFactor = 0.05;
-      controls.target.set(0, 0, 0);
+/* 초기화 함수 */
+function init() {
+  // 씬(Scene)
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xffffff); // 배경색 (흰색)
 
-      // 조명(Light)
-      const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      dirLight.position.set(5, 10, 7.5);
-      scene.add(dirLight);
+  // 카메라(Camera)
+  camera = new THREE.PerspectiveCamera(
+    60,                                 // FOV
+    window.innerWidth / window.innerHeight,  // 종횡비
+    0.1,                                // near
+    1000                                // far
+  );
+  camera.position.set(0, 0, 2); // 카메라 위치
 
-      const ambLight = new THREE.AmbientLight(0xffffff, 0.3);
-      scene.add(ambLight);
+  // 렌더러(Renderer)
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
 
-      // .ply 파일 로드
-      const loader = new PLYLoader();
-      loader.load(
-        "./sample.ply", // 실제 .ply 파일 이름/경로에 맞게 수정
-        (geometry) => {
-          // 법선 계산
-          geometry.computeVertexNormals();
+  // 컨트롤(OrbitControls) : 마우스 드래그/휠로 3D 모델 회전/줌
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;   // 부드러운 감속 효과
+  controls.dampingFactor = 0.05;
+  controls.target.set(0, 0, 0);    // 초기 시점
 
-          // 점(Points) 클라우드로 렌더링
-          const material = new THREE.PointsMaterial({
-            size: 0.01,
-            vertexColors: true,  // .ply에 색상 정보가 있다면 표시됨
-          });
-          const points = new THREE.Points(geometry, material);
-          scene.add(points);
+  // 광원(Light)
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  dirLight.position.set(5, 10, 7.5);
+  scene.add(dirLight);
 
-          /* 
-          // 메시(Mesh)로 보고 싶다면 이렇게 교체:
-          const meshMaterial = new THREE.MeshLambertMaterial({ vertexColors: true });
-          const mesh = new THREE.Mesh(geometry, meshMaterial);
-          scene.add(mesh);
-          */
-        },
-        (xhr) => {
-          console.log(`${(xhr.loaded / xhr.total) * 100}% loaded`);
-        },
-        (error) => {
-          console.error("Error loading PLY file:", error);
-        }
-      );
+  const ambLight = new THREE.AmbientLight(0xffffff, 0.3);
+  scene.add(ambLight);
 
-      // 창 크기 변경 시 처리
-      window.addEventListener("resize", onWindowResize, false);
+  // PLYLoader로 .ply 포인트클라우드 로드
+  const loader = new PLYLoader();
+  loader.load(
+    "./ours.ply", // 실제 .ply 파일 경로. (여기서는 index.html과 같은 폴더)
+    (geometry) => {
+      // 포인트(점) 형태로 렌더링
+      geometry.computeVertexNormals();  // 법선 계산(색상 vertexColors 사용 가능)
+
+      const material = new THREE.PointsMaterial({
+        size: 0.01,       // 점 크기
+        vertexColors: true  // PLY 파일 내 색상 데이터 사용
+      });
+      const points = new THREE.Points(geometry, material);
+      scene.add(points);
+
+      /*
+      // 메시(Mesh)로 렌더링하고 싶다면 주석 해제
+      const meshMaterial = new THREE.MeshLambertMaterial({ vertexColors: true });
+      const mesh = new THREE.Mesh(geometry, meshMaterial);
+      scene.add(mesh);
+      */
+    },
+    (xhr) => {
+      // 진행 상황 (로딩 퍼센트)
+      console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+    },
+    (error) => {
+      console.error('An error occurred while loading the PLY file:', error);
     }
+  );
 
-    function onWindowResize() {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    }
+  // 윈도우 리사이즈 이벤트
+  window.addEventListener('resize', onWindowResize, false);
+}
 
-    function animate() {
-      requestAnimationFrame(animate);
-      controls.update(); // OrbitControls 매 프레임 업데이트
-      renderer.render(scene, camera);
-    }
-  </script>
+/* 창 크기 변경 대응 */
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+/* 애니메이션 루프 */
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();           // OrbitControls 업데이트
+  renderer.render(scene, camera);
+}
+
+</script>
 </body>
 </html>
-
 
