@@ -1,9 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>PLY Viewer (ESM)</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>PLY Viewer (UMD)</title>
+
+  <!-- Three.js (r128) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- OrbitControls -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <!-- PLYLoader -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/PLYLoader.js"></script>
+
   <style>
     body { font-family: Arial, sans-serif; text-align: center; }
     .ply-container { width: 300px; height: 300px; display: inline-block; margin: 10px; border: 1px solid #ccc; }
@@ -18,17 +26,13 @@
   <div class="ply-container" id="ours"></div>
   <p>Ours</p>
 
-  <!-- ESM 스크립트 -->
-  <script type="module">
-    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js";
-    import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/controls/OrbitControls.js";
-    import { PLYLoader } from "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/loaders/PLYLoader.js";
-
+  <script>
     function loadPLYModel(containerId, fileName) {
       const container = document.getElementById(containerId);
       const width = container.clientWidth;
       const height = container.clientHeight;
 
+      // Three.js 전역 객체 사용
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 100);
       camera.position.set(0, 0, 2);
@@ -37,13 +41,15 @@
       renderer.setSize(width, height);
       container.appendChild(renderer.domElement);
 
-      const controls = new OrbitControls(camera, renderer.domElement);
+      // OrbitControls는 전역 THREE.OrbitControls
+      const controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
 
       const light = new THREE.AmbientLight(0xffffff, 1);
       scene.add(light);
 
-      const loader = new PLYLoader();
+      // PLYLoader 역시 전역 THREE.PLYLoader
+      const loader = new THREE.PLYLoader();
       const filePath = `https://github.com/ByungKi-K/ply-viewer/raw/main/${fileName}`;
 
       loader.load(filePath, function (geometry) {
@@ -62,6 +68,7 @@
       animate();
     }
 
+    // 페이지 로드 후 실행
     window.onload = function() {
       loadPLYModel("marigold", "marigold.ply");
       loadPLYModel("geowizard", "geowizard.ply");
