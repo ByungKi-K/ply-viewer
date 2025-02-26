@@ -5,23 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PLY Viewer</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three/examples/js/controls/OrbitControls.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three/examples/js/loaders/PLYLoader.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
-        .ply-container { width: 300px; height: 300px; display: inline-block; margin: 10px; border: 1px solid #ccc; }
-    </style>
-</head>
-<body>
-    <h1>3D PLY Viewer</h1>
-    <div class="ply-container" id="marigold"></div>
-    <p>Marigold</p>
-    <div class="ply-container" id="geowizard"></div>
-    <p>Geowizard</p>
-    <div class="ply-container" id="ours"></div>
-    <p>Ours</p>
+    <script type="module">
+        import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/controls/OrbitControls.js";
+        import { PLYLoader } from "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/loaders/PLYLoader.js";
 
-    <script>
         function loadPLYModel(containerId, fileName) {
             const container = document.getElementById(containerId);
             const width = container.clientWidth;
@@ -35,14 +22,14 @@
             renderer.setSize(width, height);
             container.appendChild(renderer.domElement);
 
-            // 🚀 `OrbitControls` 수정 (기존 `THREE.OrbitControls` → `new THREE.OrbitControls`)
-            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            // ✅ OrbitControls 올바르게 생성
+            const controls = new OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
 
             const light = new THREE.AmbientLight(0xffffff, 1);
             scene.add(light);
 
-            const loader = new THREE.PLYLoader();
+            const loader = new PLYLoader();
             const filePath = `https://github.com/ByungKi-K/ply-viewer/raw/main/${fileName}`;
 
             loader.load(filePath, function (geometry) {
@@ -61,9 +48,24 @@
             animate();
         }
 
-        loadPLYModel("marigold", "marigold.ply");
-        loadPLYModel("geowizard", "geowizard.ply");
-        loadPLYModel("ours", "ours.ply");
+        window.onload = function () {
+            loadPLYModel("marigold", "marigold.ply");
+            loadPLYModel("geowizard", "geowizard.ply");
+            loadPLYModel("ours", "ours.ply");
+        };
     </script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .ply-container { width: 300px; height: 300px; display: inline-block; margin: 10px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>3D PLY Viewer</h1>
+    <div class="ply-container" id="marigold"></div>
+    <p>Marigold</p>
+    <div class="ply-container" id="geowizard"></div>
+    <p>Geowizard</p>
+    <div class="ply-container" id="ours"></div>
+    <p>Ours</p>
 </body>
 </html>
