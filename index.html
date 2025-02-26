@@ -1,68 +1,56 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PLY Viewer</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three/examples/js/loaders/PLYLoader.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/controls/OrbitControls.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
-        .container { width: 80%; margin: 0 auto; }
-        .ply-container { width: 300px; height: 300px; display: inline-block; margin: 10px; border: 1px solid #ccc; }
-    </style>
-</head>
-<body>
-    <h1>3D PLY Viewer</h1>
-    <div class="ply-container" id="marigold"></div>
-    <p>Marigold</p>
-    <div class="ply-container" id="geowizard"></div>
-    <p>Geowizard</p>
-    <div class="ply-container" id="ours"></div>
-    <p>Ours</p>
+<script>
+    function loadPLYModel(containerId, fileName) {
+        const container = document.getElementById(containerId);
+        const width = container.clientWidth;
+        const height = container.clientHeight;
 
-    <script>
-        function loadPLYModel(containerId, fileName) {
-            const container = document.getElementById(containerId);
-            const width = container.clientWidth;
-            const height = container.clientHeight;
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 100);
+        camera.position.set(0, 0, 2);
 
-            const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 100);
-            camera.position.set(0, 0, 2);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(width, height);
+        container.appendChild(renderer.domElement);
 
-            const renderer = new THREE.WebGLRenderer();
-            renderer.setSize(width, height);
-            container.appendChild(renderer.domElement);
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
 
-            const controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
+        const light = new THREE.AmbientLight(0xffffff, 1);
+        scene.add(light);
 
-            const light = new THREE.AmbientLight(0xffffff, 1);
-            scene.add(light);
+        const loader = new THREE.PLYLoader();
+        
+        // ✅ GitHub LFS 파일 로드 URL 수정 (직접 URL 사용 불가)
+        const rawGitHubLFSUrl = `https://github.com/ByungKi-K/ply-viewer/raw/main/${fileName}`;
+        
+        // 🚀 CORS 프록시를 사용하여 GitHub LFS 파일 로드
+        const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+        const filePath = proxyUrl + rawGitHubLFSUrl;
 
-            const loader = new THREE.PLYLoader();
-            const filePath = `https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/ply-viewer/main/${fileName}`;
+        loader.load(filePath, function (geometry) {
+            console.log(`${fileName} Loaded Successfully`, geometry);
+            geometry.computeVertexNormals();
+            const material = new THREE.PointsMaterial({ size: 0.01, vertexColors: true });
+            const pointCloud = new THREE.Points(geometry, material);
+            scene.add(pointCloud);
+        }, 
+        function (xhr) {
+            console.log(`${fileName} Loading: ${(xhr.loaded / xhr.total * 100).toFixed(2)}%`);
+        }, 
+        function (error) {
+            console.error(`Error loading ${fileName}:`, error);
+        });
 
-            loader.load(filePath, function (geometry) {
-                geometry.computeVertexNormals();
-                const material = new THREE.PointsMaterial({ size: 0.01, vertexColors: true });
-                const pointCloud = new THREE.Points(geometry, material);
-                scene.add(pointCloud);
-            });
-
-            function animate() {
-                requestAnimationFrame(animate);
-                controls.update();
-                renderer.render(scene, camera);
-            }
-            animate();
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
         }
+        animate();
+    }
 
-        loadPLYModel("marigold", "marigold.ply");
-        loadPLYModel("geowizard", "geowizard.ply");
-        loadPLYModel("ours", "ours.ply");
-    </script>
-</body>
-</html>
+    loadPLYModel("marigold", "marigold.ply");
+    loadPLYModel("geowizard", "geowizard.ply");
+    loadPLYModel("ours", "ours.ply");
+</script>
+
